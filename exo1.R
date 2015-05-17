@@ -4,23 +4,34 @@ distanceEuclidienne <- function(x1,x2,y1,y2){
 
 nbFamille <- length(unique(zapp))
 napp <- dim(Xapp)[1]
-nbDimension <- dim(Xapp)
+nbDimension <- dim(Xapp)[2]
+
+
+#On parcourt sur le nombre de famille puis
+#on parcourt une fois le vecteur Xapp sur Y, 
+#puis dans cette boucle on itere sur le nombre de dimension. 
 
 
 ceuc.app <- function(Xapp,zapp){
-x<- NULL 
-mu <- NULL
+x<- NULL
 n <- NULL
-for( i in 1:nbDimension){
-	n[i] <- length(zapp[zapp==i])
-	for( j in 1:napp){
-		ifelse(zapp[j]==1, z <- 1, z <- 0)
-		x[i][i] <- x[i][i] + z*Xapp[j,i]
+x <- rbind(rep(0, nbFamille),rep(0,nbDimension))
+for(z in 1:nbFamille){
+	for(i in 1:napp){
+		if(zapp[i]==z){
+			n[z] <- length(zapp[zapp==z])
+			for(j in 1:nbDimension){
+				x[z,j] <- x[z,j] + Xapp[i,j]
+			}
+		}
+		}
+		for(j in 1:nbDimension){
+				x[z,j] <- x[z,j] * (1/n[z])
+		}	
 	}
-	x[i][] <- x[i][] * (1/n[i])
-	}
-	return x[][]
+	return(x)
 }
+			
 
 
 mu<-ceuc.app(Xapp,zapp)
