@@ -1,18 +1,12 @@
-distanceEuclidienne <- function(x1,x2,y1,y2){
-	return sqrt((x1-x2)^2 + (y1-y2)^2)
+distanceEuclidienne <- function(x1,xt,y1,yt){
+	return(sqrt((x1-xt)^2 + (y1-yt)^2))
 }
 
 nbFamille <- length(unique(zapp))
-napp <- dim(Xapp)[1]
-nbDimension <- dim(Xapp)[2]
-
-
-#On parcourt sur le nombre de famille puis
-#on parcourt une fois le vecteur Xapp sur Y, 
-#puis dans cette boucle on itere sur le nombre de dimension. 
-
 
 ceuc.app <- function(Xapp,zapp){
+napp <- dim(Xapp)[1]
+nbDimension <- dim(Xapp)[2]
 x<- NULL
 n <- NULL
 x <- rbind(rep(0, nbFamille),rep(0,nbDimension))
@@ -33,17 +27,26 @@ for(z in 1:nbFamille){
 }
 			
 
+mu<-rbind(ceuc.app(Xapp,zapp))
 
-mu<-ceuc.app(Xapp,zapp)
-
-napp <- dim(Xtst)[1]
 ceuc.val <- function(mu,Xtst){
-for( i in 1:napp){
-	for( j in 1:nbclass){
-		dist[i][j] <- distanceEuclidienne(Xapp[i][j], mu[i][j])
-	}
+napp <- dim(Xtst)[1]
+min <- rbind(rep(99999, napp))
+nbDimension <- dim(Xtst)[2]
+etiquette <- rbind(rep(0,napp))
+distance <- rbind(rep(0, nbFamille),rep(0,napp))
+for(i in 1:napp){
+	for(z in 1:nbFamille){
+		distance[z,i] <- distanceEuclidienne(Xtst[i,1],mu[z,1],Xtst[i,2],mu[z,2])
+		if(distance[z,i]< min[i]){
+			min[i] <- distance[z,i]
+			etiquette[i]<-z
+		}
 	}
 }
+	return(etiquette)
+}
+
 
 kppv.app <- function(Xapp,zapp,Xval,zval,nppv){
 }
@@ -51,7 +54,7 @@ kppv.app <- function(Xapp,zapp,Xval,zval,nppv){
 kppv.val <- function(Xapp,zapp,L,Xtst){
 }
 
-%Test de nos fonctions
+#Test de nos fonctions
 
 donn <- read.table("data/Synth1-40.txt",header=F)
 X <- donn[,1:2]
