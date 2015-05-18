@@ -70,29 +70,37 @@ front.ceuc <- function(ceuc.val, mu, Xapp, zapp)
 
 nppv <- rbind(c(1,2,3,5))
 
+getVoisins <- function(Xapp,zapp,K,Xtst){
+	napp <- dim(Xapp)[1]
+	ntst <- dim(Xtst)[1]
+	distance <- matrix(0, ntst, napp)
+	voisins <- matrix(0,ntst,K)
+	for(i in 1:ntst){
+		min <- matrix(99999,K,2)
+		for(j in 1:napp){
+		distance[i,j] <- distanceEuclidienne(Xtst[i,1],Xapp[j,1],Xtst[i,2],Xapp[j,2])
+		if(j <= K ){
+			min[j,1] <- distance[i,j]
+			min[j,2] <- j
+			min <- min[order(min[,1]),]
+		}
+		else if(distance[i,j]< min[K,1]){
+			min[K,1] <- distance[i,j]
+			min[K,2] <- j
+			min <- min[order(min[,1]),]
+		}
+		}
+		voisins[i,] <- min[,2]
+	}
+	return(voisins)
+}
+
 kppv.app <- function(Xapp,zapp,Xval,zval,nppv){
 }
 
 kppv.val <- function(Xapp,zapp,K,Xtst){
-	napp <- dim(Xapp)[1]
-	ntst <- dim(Xtst)[1]
-	min <- matrix(99999,ntst, K)
-	distance <- matrix(0, ntst, napp)
-	voisins <- matrix(99999, ntst, K)	
-	for(i in 1:ntst){
-		for(j in 1:napp){
-		distance[i,j] <- distanceEuclidienne(Xtst[i,1],Xapp[j,1],Xtst[i,2],Xapp[j,2])
-		if(j <= K ){
-			min[i,j] <- distance[i,j]
-			min[i,] <- sort(min[i,])
-		}
-		else if(distance[i,j]< min[i,K]){
-			min[i,K] <- distance[i,j]
-			min[i,] <- sort(min[i,])
-		}
-		}
-	print(min[i,])
-	}
+	voisins <- getVoisins(Xapp,zapp,K,Xtst)
+	return(voisins)
 }
 
 #Test de nos fonctions
