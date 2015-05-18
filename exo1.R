@@ -47,26 +47,6 @@ for(i in 1:napp){
 	return(etiquette)
 }
 
-front.ceuc <- function(ceuc.val, mu, Xapp, zapp)
-{
-	minX <- min(Xapp[,1])-1
-	maxX <- max(Xapp[,1])+1
-	minY <- min(Xapp[,2])-1
-	maxY <- max(Xapp[,2])+1
-	# grille d'affichage 
-	grilleX <- seq(from=minX,to=maxX,by=0.01)
-	naffX <- length(grilleX)
-	grilleY <- seq(from=minY,to=maxY,by=0.01)
-	naffY <- length(grilleY)
-
-	grille <- cbind(rep.int(grilleX,times=rep(naffY,naffX)),rep(grilleY,naffX))
-
-	# calcul des valeurs de la fonction 
-	valf <- ceuc.val(mu, grille)
-	plot(Xapp, col=c("red","green","blue","magenta","orange")[zapp])
-	contour(grilleX, grilleY, matrix(valf,nrow=naffX,byrow=T), add=T, drawlabels=FALSE, levels=1.5)
-}
-
 
 nppv <- rbind(c(1,2,3,5))
 
@@ -99,8 +79,29 @@ kppv.app <- function(Xapp,zapp,Xval,zval,nppv){
 }
 
 kppv.val <- function(Xapp,zapp,K,Xtst){
+	ntst <- dim(Xtst)[1]
+	etiquette <- rbind(rep(0,ntst))
 	voisins <- getVoisins(Xapp,zapp,K,Xtst)
-	return(voisins)
+	for(i in 1:ntst){
+		count1 <- 0
+		count2 <- 0
+		for(k in 1:K){
+			if(zapp[voisins[i,k]]==1){
+				count1 <- count1 + 1
+
+			}
+			else{
+				count2 <- count2 + 1
+			}
+		}
+		if(count1 > count2){
+			etiquette[i]<-1
+		}
+		else{
+			etiquette[i]<-2
+		}
+	}
+	return(etiquette)
 }
 
 #Test de nos fonctions
@@ -113,6 +114,47 @@ Xapp <- X[c(1:15,21:35),]
 zapp <- z[c(1:15,21:35)]
 Xtst <- X[c(16:20,36:40),]
 ztst <- z[c(16:20,36:40)]
+
+front.ceuc <- function(ceuc.val, mu, Xapp, zapp)
+{
+	minX <- min(Xapp[,1])-1
+	maxX <- max(Xapp[,1])+1
+	minY <- min(Xapp[,2])-1
+	maxY <- max(Xapp[,2])+1
+	# grille d'affichage 
+	grilleX <- seq(from=minX,to=maxX,by=0.01)
+	naffX <- length(grilleX)
+	grilleY <- seq(from=minY,to=maxY,by=0.01)
+	naffY <- length(grilleY)
+
+	grille <- cbind(rep.int(grilleX,times=rep(naffY,naffX)),rep(grilleY,naffX))
+
+	# calcul des valeurs de la fonction 
+	valf <- ceuc.val(mu, grille)
+	plot(Xapp, col=c("red","green","blue","magenta","orange")[zapp])
+	contour(grilleX, grilleY, matrix(valf,nrow=naffX,byrow=T), add=T, drawlabels=FALSE, levels=1.5)
+}
+
+front.kppv <- function(kppv.val, K, Xapp, zapp)
+{
+	minX <- min(Xapp[,1])-1
+	maxX <- max(Xapp[,1])+1
+	minY <- min(Xapp[,2])-1
+	maxY <- max(Xapp[,2])+1
+	# grille d'affichage 
+	grilleX <- seq(from=minX,to=maxX,by=0.01)
+	naffX <- length(grilleX)
+	grilleY <- seq(from=minY,to=maxY,by=0.01)
+	naffY <- length(grilleY)
+
+	grille <- cbind(rep.int(grilleX,times=rep(naffY,naffX)),rep(grilleY,naffX))
+
+	# calcul des valeurs de la fonction 
+	valf <- kppv.val(Xapp, zapp, K, grille)
+	plot(Xapp, col=c("red","green","blue","magenta","orange")[zapp])
+	contour(grilleX, grilleY, matrix(valf,nrow=naffX,byrow=T), add=T, drawlabels=FALSE, levels=1.5)
+}
+
 
 ceuc.val(ceuc.app(Xapp,zapp),Xtst)
 front.ceuc(ceuc.val,ceuc.app(Xapp,zapp),Xapp,zapp)
