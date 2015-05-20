@@ -2,7 +2,6 @@ distanceEuclidienne <- function(x1,xt,y1,yt){
 	return(sqrt((x1-xt)^2 + (y1-yt)^2))
 }
 
-nbFamille <- length(unique(zapp))
 
 ceuc.app <- function(Xapp,zapp){
 napp <- dim(Xapp)[1]
@@ -48,7 +47,6 @@ for(i in 1:napp){
 }
 
 
-nppv <- rbind(c(1,2,3,5))
 
 getVoisins <- function(Xapp,zapp,K,Xtst){
 	napp <- dim(Xapp)[1]
@@ -62,12 +60,16 @@ getVoisins <- function(Xapp,zapp,K,Xtst){
 		if(j <= K ){
 			min[j,1] <- distance[i,j]
 			min[j,2] <- j
-			min <- min[order(min[,1]),]
+			if(K!=1){
+				min <- min[order(min[,1]),]
+			}
 		}
 		else if(distance[i,j]< min[K,1]){
 			min[K,1] <- distance[i,j]
 			min[K,2] <- j
-			min <- min[order(min[,1]),]
+			if(K!=1){
+				min <- min[order(min[,1]),]
+			}
 		}
 		}
 		voisins[i,] <- min[,2]
@@ -76,6 +78,17 @@ getVoisins <- function(Xapp,zapp,K,Xtst){
 }
 
 kppv.app <- function(Xapp,zapp,Xval,zval,nppv){
+erreur <- 1
+for(i in nppv){
+    famille_K <- kppv.val(Xapp, zapp, i, Xval)
+    erreur_K <- sum((famille_K == zval)==TRUE)/length(zval)
+    print(erreur_K)
+    if(erreur > erreur_K){
+      erreur <- erreur_K
+      K <- i
+    }
+  }
+  return(K)
 }
 
 kppv.val <- function(Xapp,zapp,K,Xtst){
@@ -155,6 +168,12 @@ front.kppv <- function(kppv.val, K, Xapp, zapp)
 	contour(grilleX, grilleY, matrix(valf,nrow=naffX,byrow=T), add=T, drawlabels=FALSE, levels=1.5)
 }
 
+nbFamille <- length(unique(zapp))
+nppv <- c(3,5,7,9,11,13,15,17)
 
-ceuc.val(ceuc.app(Xapp,zapp),Xtst)
-front.ceuc(ceuc.val,ceuc.app(Xapp,zapp),Xapp,zapp)
+K<- kppv.app(Xapp,zapp,Xtst,ztst,nppv)
+
+
+#ceuc.val(ceuc.app(Xapp,zapp),Xtst)
+#front.ceuc(ceuc.val,ceuc.app(Xapp,zapp),Xapp,zapp)
+#front.kppv(kppv.val, K, Xapp, zapp)
