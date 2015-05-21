@@ -120,7 +120,7 @@ kppv.val <- function(Xapp,zapp,K,Xtst){
 
 #Test de nos fonctions
 
-donn <- read.table("Synth1-40.txt",header=F)
+donn <- read.table("data/Synth1-40.txt",header=F)
 X <- donn[,1:2]
 z<- donn[,3]
 
@@ -181,29 +181,26 @@ K<- kppv.app(Xapp,zapp,Xtst,ztst,nppv)
 
 #1.2
 #on prend quadratique pour 40 et 100
-calcul_pi <- function(donn){
-	X <- donn[,(1:dim(donn[1,])[2]-1)]
-	Z <- donn[,dim(donn[1,])[2]]
+
+calcul_pi <- function(X,Z){
 	nbFamille <- length(unique(Z))
 	pi <- NULL
 	n <- NULL
 	n <- dim(X)[1]
 	for(z in 1:nbFamille){
-		for(i in 1:n){
-			if(Z[i]==z){
-				n[z] <- length(Z[Z==z])
-				}
-			pi[z]=n[z]/length(Z)
-		}
+		n[z] <- length(Z[Z==z])
+		pi[z]=n[z]/length(Z)
 	}
 	return(pi)
 }
+
 
 calcul_muk<-function(X,Z)
 {
         mu = NULL
         nbDimension = dim(X)[2]
         nbFamille = length(unique(Z))
+		n<- NULL
         mu <- rbind(rep(0, nbFamille),rep(0,nbDimension))
         for (k in 1:nbFamille){
                 for (i in 1:length(Z)){
@@ -223,3 +220,43 @@ calcul_muk<-function(X,Z)
 }
 
 #on prend lineaire pour 500 et 1000
+
+#Partie 2 
+#Lecture des données
+
+donn <- read.table("data/Synth1-40.txt", header=F)
+X <- donn[,1:2]
+z <- donn[,3]
+Xapp40 <- X[c(1:40),]
+zapp40 <- z[c(1:40)]
+
+
+donn <- read.table("data/Synth1-100.txt", header=F)
+X <- donn[,1:2]
+z <- donn[,3]
+Xapp100 <- X[c(1:100),]
+zapp100 <- z[c(1:100)]
+
+
+donn <- read.table("data/Synth1-500.txt", header=F)
+X <- donn[,1:2]
+z <- donn[,3]
+Xapp500 <- X[c(1:500),]
+zapp500 <- z[c(1:500)]
+
+donn <- read.table("data/Synth1-1000.txt", header=F)
+X <- donn[,1:2]
+z <- donn[,3]
+Xapp1000 <- X[c(1:1000),]
+zapp1000 <- z[c(1:1000)]
+
+
+mu40 <-ceuc.app(Xapp40,zapp40)
+mu100 <-ceuc.app(Xapp100,zapp100)
+mu500 <- ceuc.app(Xapp500,zapp500)
+mu1000 <- ceuc.app(Xapp1000,zapp1000)
+
+pi40  <- calcul_pi(Xapp40,zapp40)
+pi100 <- calcul_pi(Xapp100,zapp100)
+pi500 <- calcul_pi(Xapp500,zapp500)
+pi1000 <- calcul_pi(Xapp1000,zapp1000)
