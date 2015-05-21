@@ -1,3 +1,4 @@
+#1.1
 distanceEuclidienne <- function(x1,xt,y1,yt){
 	return(sqrt((x1-xt)^2 + (y1-yt)^2))
 }
@@ -119,7 +120,7 @@ kppv.val <- function(Xapp,zapp,K,Xtst){
 
 #Test de nos fonctions
 
-donn <- read.table("data/Synth1-40.txt",header=F)
+donn <- read.table("Synth1-40.txt",header=F)
 X <- donn[,1:2]
 z<- donn[,3]
 
@@ -177,3 +178,48 @@ K<- kppv.app(Xapp,zapp,Xtst,ztst,nppv)
 #ceuc.val(ceuc.app(Xapp,zapp),Xtst)
 #front.ceuc(ceuc.val,ceuc.app(Xapp,zapp),Xapp,zapp)
 #front.kppv(kppv.val, K, Xapp, zapp)
+
+#1.2
+#on prend quadratique pour 40 et 100
+calcul_pi <- function(donn){
+	X <- donn[,(1:dim(donn[1,])[2]-1)]
+	Z <- donn[,dim(donn[1,])[2]]
+	nbFamille <- length(unique(Z))
+	pi <- NULL
+	n <- NULL
+	n <- dim(X)[1]
+	for(z in 1:nbFamille){
+		for(i in 1:n){
+			if(Z[i]==z){
+				n[z] <- length(Z[Z==z])
+				}
+			pi[z]=n[z]/length(Z)
+		}
+	}
+	return(pi)
+}
+
+calcul_muk<-function(X,Z)
+{
+        mu = NULL
+        nbDimension = dim(X)[2]
+        nbFamille = length(unique(Z))
+        mu <- rbind(rep(0, nbFamille),rep(0,nbDimension))
+        for (k in 1:nbFamille){
+                for (i in 1:length(Z)){
+                        if (Z[i] == k){
+                                n[k] <- length(Z[Z==k])
+                                for(j in 1:nbDimension){
+                                        mu[k,j] = mu[k,j] + X[i,j]
+                                }
+                        }
+                }
+        for (l in 1:nbDimension){
+                mu[k,l] <- mu[k,l] * (1/n[k])
+        }
+        }
+
+        return(mu)
+}
+
+#on prend lineaire pour 500 et 1000
