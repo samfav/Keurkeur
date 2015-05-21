@@ -208,7 +208,7 @@ z <- donn[,3]
 Xapp1000 <- X[c(1:1000),]
 zapp1000 <- z[c(1:1000)]
 
-#on prend quadratique pour 40 et 100
+#on prend quadratique
 
 calcul_pik <- function(X,Z){
 	nbFamille <- length(unique(Z))
@@ -260,3 +260,77 @@ vk40  <- calcul_vk(Xapp40,zapp40)
 vk100 <- calcul_vk(Xapp100,zapp100)
 vk500 <- calcul_vk(Xapp500,zapp500)
 vk1000 <- calcul_vk(Xapp1000,zapp1000)
+
+
+#1.2.2
+separ1 <- function(X, z) {
+	g <- max(z)
+
+	Xapp <- NULL
+	zapp <- NULL
+	Xtst <- NULL
+	ztst <- NULL
+
+	for (k in 1:g) {
+	    indk <- which(z==k)
+    	ntot <- length(indk)
+	    napp <- round(ntot*2/3)
+    	ntst <- ntot-napp
+
+	    itot <- sample(indk)
+    	iapp <- itot[1:napp]
+	    itst <- itot[(napp+1):ntot]
+
+    	Xapp <- rbind(Xapp, X[iapp,])
+	    zapp <- c(zapp, z[iapp])
+    	Xtst <- rbind(Xtst, X[itst,])
+	    ztst <- c(ztst, z[itst])
+	}
+
+	res <- NULL
+	res$Xapp <- Xapp
+	res$zapp <- zapp
+	res$Xtst <- Xtst
+	res$ztst <- ztst
+
+	res
+}
+
+#Calcul de E
+calcul_E <- function(zappDonnees,zappCalcule) {
+	m = length(zappDonnees)
+	count1 <- 0
+	for(i in 1:m){
+			if(zappDonnees[i]!= zappCalcule[i]){
+				count1 <- count1 + 1
+				}
+			}
+			return(count1/m)
+}
+
+calcul_E(ztst,ceuc.val(ceuc.app(Xapp,zapp),Xtst))
+
+separation_aleatoire <- function (Xdata, zdata) {
+	t_erreur <- rbind(rep(0,20))
+
+	t_test <- 0
+	for (i in 1:20) {
+		donn.sep <- separ1(Xdata,zdata)
+		Xapp <- donn.sep$Xapp
+		zapp <- donn.sep$zapp
+		Xtst <- donn.sep$Xtst
+		ztst <- donn.sep$ztst
+		t_erreur[i] <- calcul_E(ztst,ceuc.val(ceuc.app(Xapp,zapp),Xtst))
+	}
+	return (t_apprentissage)
+}
+
+erreur40 <- separation_aleatoire(Xapp40, zapp40)
+erreur100 <- separation_aleatoire(Xapp100, zapp100)
+erreur500 <- separation_aleatoire(Xapp500, zapp500)
+erreur1000 <- separation_aleatoire(Xapp1000, zapp1000)
+
+mean(erreur40)
+mean(erreur100)
+mean(erreur500)
+mean(erreur1000)
