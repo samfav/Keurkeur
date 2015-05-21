@@ -222,6 +222,30 @@ calcul_pik <- function(X,Z){
 	return(pi)
 }
 
+calcul_vk <- function(X, Z){
+	x<- NULL
+	n <- NULL
+	napp <- dim(X)[1]
+	nbDimension <- dim(X)[2]
+	mu <- ceuc.app(X,Z)
+	Vk <- rbind(rep(0, nbFamille),rep(0,nbDimension))
+	for(z in 1:nbFamille){
+		for(i in 1:napp){
+			if(Z[i]==z){
+				n[z] <- length(Z[Z==z])
+				for(j in 1:nbDimension){
+					temp <- (distanceEuclidienne(X[i,1], mu[j,1], X[i,2], mu[j,2]))^2
+					Vk[z,j] <- Vk[z,j] + temp
+					}
+				}
+			}
+			for(j in 1:nbDimension){
+				Vk[z,j] <- Vk[z,j] * (1/n[z])
+				}	
+		}
+	return(Vk)
+}
+
 mu40 <-ceuc.app(Xapp40,zapp40)
 mu100 <-ceuc.app(Xapp100,zapp100)
 mu500 <- ceuc.app(Xapp500,zapp500)
@@ -232,7 +256,7 @@ pi100 <- calcul_pik(Xapp100,zapp100)
 pi500 <- calcul_pik(Xapp500,zapp500)
 pi1000 <- calcul_pik(Xapp1000,zapp1000)
 
-
-calcul_vk <- function(X, Z){
-	
-}
+vk40  <- calcul_vk(Xapp40,zapp40)
+vk100 <- calcul_vk(Xapp100,zapp100)
+vk500 <- calcul_vk(Xapp500,zapp500)
+vk1000 <- calcul_vk(Xapp1000,zapp1000)
