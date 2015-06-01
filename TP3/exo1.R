@@ -170,7 +170,7 @@ front.kppv <- function(kppv.val, K, Xapp, zapp)
 }
 
 nbFamille <- length(unique(zapp))
-nppv <- c(3,5,7,9,11,13,15,17)
+nppv <- c(1,3,5,7,9,11,13,15,17)
 
 K<- kppv.app(Xapp,zapp,Xtst,ztst,nppv)
 
@@ -313,7 +313,7 @@ calcul_E(ztst,ceuc.val(ceuc.app(Xapp,zapp),Xtst))
 separation_aleatoire <- function (Xdata, zdata) {
 	t_erreur <- rbind(rep(0,20))
 
-	t_test <- 0
+	t_test <- rbind(rep(0,20))
 	for (i in 1:20) {
 		donn.sep <- separ1(Xdata,zdata)
 		Xapp <- donn.sep$Xapp
@@ -321,8 +321,9 @@ separation_aleatoire <- function (Xdata, zdata) {
 		Xtst <- donn.sep$Xtst
 		ztst <- donn.sep$ztst
 		t_erreur[i] <- calcul_E(ztst,ceuc.val(ceuc.app(Xapp,zapp),Xtst))
+		t_test[i] <- calcul_E(zdata,ceuc.val(ceuc.app(Xdata,zdata),Xdata))
 	}
-	return (t_apprentissage)
+	return (t_test)
 }
 
 erreur40 <- separation_aleatoire(Xapp40, zapp40)
@@ -330,7 +331,105 @@ erreur100 <- separation_aleatoire(Xapp100, zapp100)
 erreur500 <- separation_aleatoire(Xapp500, zapp500)
 erreur1000 <- separation_aleatoire(Xapp1000, zapp1000)
 
-mean(erreur40)
-mean(erreur100)
-mean(erreur500)
-mean(erreur1000)
+erreurApp40 <- separation_aleatoire(Xapp40, zapp40)
+erreurApp100 <- separation_aleatoire(Xapp100, zapp100)
+erreurApp500 <- separation_aleatoire(Xapp500, zapp500)
+erreurApp1000 <- separation_aleatoire(Xapp1000, zapp1000)
+
+meanErreur40 <- mean(erreur40)
+meanErreur100 <- mean(erreur100)
+meanErreur500 <- mean(erreur500)
+meanErreur1000 <- mean(erreur1000)
+
+meanErreurApp40 <- mean(erreur40)
+meanErreurApp100 <- mean(erreur100)
+meanErreurApp500 <- mean(erreur500)
+meanErreurApp1000 <- mean(erreur1000)
+
+#1.3
+
+donn.sep <- separ1(Xapp1000,zapp1000)
+Xapp <- donn.sep$Xapp
+zapp <- donn.sep$zapp
+Xtst <- donn.sep$Xtst
+ztst <- donn.sep$ztst
+
+nppv <- c(3,75,125,225)
+
+K<- kppv.app(Xapp,zapp,Xtst,ztst,nppv)
+
+#On remarque que K=3 est le meilleur 
+
+#1.4
+
+separ2 <- function(X, z)
+{
+	g <- max(z)
+
+	Xapp <- NULL
+	zapp <- NULL
+	Xval <- NULL
+	zval <- NULL
+	Xtst <- NULL
+	ztst <- NULL
+
+	for (k in 1:g)
+	{
+	    indk <- which(z==k)
+    	ntot <- length(indk)
+	    napp <- round(ntot/2)
+		nval <- round(ntot/4)
+    	ntst <- ntot-napp-nval
+
+	    itot <- sample(indk)
+    	iapp <- itot[1:napp]
+    	ival <- itot[(napp+1):(napp+nval)]
+	    itst <- itot[(napp+nval+1):ntot]
+
+    	Xapp <- rbind(Xapp, X[iapp,])
+	    zapp <- c(zapp, z[iapp])
+    	Xval <- rbind(Xval, X[ival,])
+	    zval <- c(zval, z[ival])
+    	Xtst <- rbind(Xtst, X[itst,])
+	    ztst <- c(ztst, z[itst])
+	}
+
+	res <- NULL
+	res$Xapp <- Xapp
+	res$zapp <- zapp
+	res$Xval <- Xval
+	res$zval <- zval
+	res$Xtst <- Xtst
+	res$ztst <- ztst
+
+	res
+}
+
+	
+separation_aleatoire2 <- function (Xdata, zdata) {
+	t_erreur <- rbind(rep(0,20))
+	t_test <- 0
+	for (i in 1:20) {
+		donn.sep <- separ2(Xdata, zdata)
+		Xapp <- donn.sep$Xapp
+		zapp <- donn.sep$zapp
+		Xval <- donn.sep$Xval
+		zval <- donn.sep$zval
+		Xtst <- donn.sep$Xtst
+		ztst <- donn.sep$ztst
+		K <- kppv.app(Xapp,zapp,Xval,zval,nppv)
+		t_erreur[i] <- calcul_E(ztst,kppv.val(Xapp,zapp,K,Xtst))
+	}
+	return (t_erreur)
+}
+
+nppv <- c(1)
+erreur40K <- separation_aleatoire2(Xapp40, zapp40)
+erreur100K <- separation_aleatoire2(Xapp100, zapp100)
+erreur500K <- separation_aleatoire2(Xapp500, zapp500)
+erreur1000K <- separation_aleatoire2(Xapp1000, zapp1000)
+
+meanErreur40K <- mean(erreur40K)
+meanErreur100K <- mean(erreur100K)
+meanErreur500K <- mean(erreur500K)
+meanErreur1000K <- mean(erreur1000K)
