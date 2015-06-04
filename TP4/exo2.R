@@ -109,17 +109,18 @@ log.val <- function(Xtst, beta) {
 	if (nbDimension != nbDimension_beta) {
 		nbDimension = nbDimesion_beta
 	} 
-	#DIMENSION ?!
 	Xtst = cbind(Xtst, beta[1])
 	result = matrix(sample(0), nbDimension, nbDimension + 1)
 	proba = matrix(sample(0), nbDimension, nbDimension)
 	classement = matrix(sample(0), n, 1)
 	
 	for (i in 1:n) {
-		for (j in 1:nbDimension) {
-			X = c(X, Xtst[i,j])
-			#Utiliser cbind ?
+		if (nbDimension == 3) {
+			X = c(beta[1], Xapp[i,1], Xapp[i,2])
 		}
+		else {
+				X = c(Xapp[i,1], Xapp[i,2])
+			 }
 		proba = proba + exp(t(beta) %*% X) / (exp(t(beta) %*% X) + 1)
 	}
 	result = cbind(proba, classement)
