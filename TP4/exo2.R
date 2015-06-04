@@ -27,10 +27,12 @@ calcul_log <- function(beta, Xapp, t_cout, nbDimension) {
 	n = dim(Xapp)[1]
 	logL = 0
 	for (i in 1:n) {
-		for (j in 1:nbDimension) {
-			X = c(X, Xapp[i,j])
-			#Utiliser cbind ?
+		if (nbDimension == 3) {
+			X = c(beta[1], Xapp[i,1], Xapp[i,2])
 		}
+		else {
+				X = c(Xapp[i,1], Xapp[i,2])
+			 }
 		logL = logL + t_cout[i] * t(beta) %*% X - log(exp(t(beta) %*% X + 1))
 	}
 	return (logL)
@@ -41,10 +43,12 @@ calcul_gradient <- function(beta, Xapp, t_cout, nbDimension) {
 	result = matrix(sample(0),nbDimension, 1)
 	X = matrix(sample(0),n, nbDimension)
 	for (i in 1:n) {
-		for (j in 1:nbDimension) {
-			X = c(X, Xapp[i,j])
-			#Utiliser cbind ?
+		if (nbDimension == 3) {
+			X = c(beta[1], Xapp[i,1], Xapp[i,2])
 		}
+		else {
+				X = c(Xapp[i,1], Xapp[i,2])
+			 }
 		result = result + t_cout[i] * X - X * exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))
 	}
 	return (result)
@@ -54,10 +58,12 @@ calcul_H <- function(beta, Xapp, zapp, nbDimension){
     n = dim(Xapp)[1]
     W = matrix(sample(0), n,n)
     for(i in 1:n){
-		for (j in 1:nbDimension) {
-			X = c(X, Xapp[i,j])
-			#Utiliser cbind ?
+		if (nbDimension == 3) {
+			X = c(beta[1], Xapp[i,1], Xapp[i,2])
 		}
+		else {
+				X = c(Xapp[i,1], Xapp[i,2])
+			 }
         W[i,i] = exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))^2
     }
     H = -as.matrix(t(Xapp)) %*% as.matrix(W) %*% as.matrix(Xapp)
@@ -72,7 +78,7 @@ log.app <- function(Xapp, zapp, intr, epsi) {
     }
     beta = matrix(sample(0), nbDimension, 1)
     t_cout = calcul_cout(Xapp, zapp, nbDimension)
-    logL = calcul_log(beta, Xapp, t_cout, nbDimensioin)
+    logL = calcul_log(beta, Xapp, t_cout, nbDimension)
 	H = matrix(sample(1), nbDimension, nbDimension)	
 	ecart = 1
     for (i in 1:(nbDimension - 1)) {
@@ -81,7 +87,7 @@ log.app <- function(Xapp, zapp, intr, epsi) {
 		print(ecart)
 		if (ecart > epsi) {
 			print(3)
-           	H = calcul_H(Xapp, zapp, beta, nbDimension)
+           	H = calcul_H(beta, Xapp, zapp, nbDimension)
 			print (H)
            	grad = calcul_gradient(beta, Xapp, t_cout, nbDimension)
            	beta = beta - ginv(H)%*%grad
