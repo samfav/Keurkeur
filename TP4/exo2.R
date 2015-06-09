@@ -1,134 +1,175 @@
-setwd("/Users/MarieChatelin/GitHub/Keurkeur/TP4/data/")
+setwd("/Users/GitHub/KeurKeur/TP4/data")
 library(MASS)
 
 #On choisit presque toujours d'ajouter un intercept qui est le beta(0) pour rendre notre fonction indépendantes des variations des varibles
 
 init <- function () {
-	donn <- read.table("Synth1-1000.txt", header=F)
-	X <- donn[,1:2]
-	z <- donn[,3]
-	Xapp1 <- X[c(1:1000),]
-	zapp1 <- z[c(1:1000)]
+    donn <- read.table("Synth1-1000.txt", header=F)
+    X <- donn[,1:2]
+    z <- donn[,3]
+    Xapp1 <- X[c(1:1000),]
+    zapp1 <- z[c(1:1000)]
 }
 
 calcul_cout <- function(Xapp, zapp, nbDimension) {
-	t_cout = matrix(sample(0), nbDimension, 1)
-	napp = length(zapp)
-	for (i in 1:napp) {
-		if (zapp[i] == 1) {
-			t_cout[i] = 1
-		}
-		else t_cout[i] = 0
-	}
-	return (t_cout)
+    t_cout = matrix(sample(0), nbDimension, 1)
+    napp = length(zapp)
+    for (i in 1:napp) {
+        if (zapp[i] == 1) {
+            t_cout[i] = 1
+        }
+        else t_cout[i] = 0
+    }
+    return (t_cout)
 }
 
-calcul_log <- function(beta, Xapp, t_cout, nbDimension) {
-	n = dim(Xapp)[1]
-	logL = 0
-	for (i in 1:n) {
-		if (nbDimension == 3) {
-			X = c(beta[1], Xapp[i,1], Xapp[i,2])
-		}
-		else {
-				X = c(Xapp[i,1], Xapp[i,2])
-			 }
-		logL = logL + t_cout[i] * t(beta) %*% X - log(exp(t(beta) %*% X + 1))
-	}
-	return (logL)
+calcul_log <- function(beta, Xapp, zapp) {
+    p = exp(as.matrix(Xapp)%*%beta)/(1+exp(as.matrix(Xapp)%*%beta))
+    logL<- t(as.matrix(Xapp))%*%(zapp-p)
+    return (logL)
 }
 
 calcul_gradient <- function(beta, Xapp, t_cout, nbDimension) {
-	n = dim(Xapp)[1]
-	result = matrix(sample(0),nbDimension, 1)
-	X = matrix(sample(0),n, nbDimension)
-	for (i in 1:n) {
-		if (nbDimension == 3) {
-			X = c(beta[1], Xapp[i,1], Xapp[i,2])
-		}
-		else {
-				X = c(Xapp[i,1], Xapp[i,2])
-			 }
-		result = result + t_cout[i] * X - X * exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))
-	}
-	return (result)
+    n = dim(Xapp)[1]
+    result = matrix(sample(0),nbDimension, 1)
+    X = matrix(sample(0),n, nbDimension)
+    for (i in 1:n) {
+        if (nbDimension == 3) {
+            X = c(beta[1], Xapp[i,1], Xapp[i,2])
+        }
+        else {
+                X = c(Xapp[i,1], Xapp[i,2])
+             }
+        result = result + t_cout[i] * X - X * exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))
+    }
+    return (result)
 }
 
 calcul_H <- function(beta, Xapp, zapp, nbDimension){
-    n = dim(Xapp)[1]
-    W = matrix(sample(0), n,n)
-    for(i in 1:n){
-		if (nbDimension == 3) {
-			X = c(beta[1], Xapp[i,1], Xapp[i,2])
-		}
-		else {
-				X = c(Xapp[i,1], Xapp[i,2])
-			 }
-        W[i,i] = exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))^2
-    }
-    H = -as.matrix(t(Xapp)) %*% as.matrix(W) %*% as.matrix(Xapp)
-    return (H)
+    n = dim(Xapp)[1]
+    W = matrix(sample(0), n,n)
+    for(i in 1:n){
+        if (nbDimension == 3) {
+            X = c(beta[1], Xapp[i,1], Xapp[i,2])
+        }
+        else {
+                X = c(Xapp[i,1], Xapp[i,2])
+             }
+        W[i,i] = exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))^2
+    }
+    H = -as.matrix(t(Xapp)) %*% as.matrix(W) %*% as.matrix(Xapp)
+    return (H)
+}
+calcul_hessienne<-function(beta, Xapp, nbDimension){
+    n = dim(Xapp)[1]
+    W = matrix(sample(0), n,n)
+    prod = as.matrix(Xapp)%*%beta
+    W = exp(prod)/((1+exp(prod))^2)
+    H = -1 * as.matrix(t(Xapp)) %*% as.matrix(diag(as.numeric(W))) %*% as.matrix(Xapp)
+    return (H)
+}
+
+calcul_p <-function(beta, Xapp){
+    n = dim(Xapp)[1]
+    p = matrix(sample(0),n, 1)
+    prod = as.matrix(Xapp) %*% beta
+    p = exp(prod)/(1+exp(prod))
+    return (p)
+}
+
+log.app2 <- function(Xapp, zapp, intr, epsi){
+    n = dim(Xapp)[1]
+    nbDimension = dim(Xapp)[2]
+    if (intr == 1) {
+        nbDimension = nbDimension + 1
+        unit =  matrix(sample(1), n, 1)
+        Xapp = cbind(as.matrix(unit), as.matrix(Xapp))
+    }
+    beta = matrix(sample(0), nbDimension, 1)
+    t_cout = calcul_cout(Xapp, zapp, nbDimension)
+    ecart = 1
+    i<-0
+    while (ecart > epsi){
+        H = -1 * calcul_hessienne(beta, Xapp, nbDimension)
+        p = calcul_p(beta, Xapp)
+        beta_n = beta + solve(H)%*%t(Xapp)%*%(t_cout - p) # solve ou ginv
+        #ecart = dist(rbind(t(beta), t(beta_n)), "euclidian")
+        ecart = sqrt(sum((beta_n-beta)^2))
+        print(ecart)
+        beta = beta_n
+        i = i+1
+    }  
+    logL = calcul_log(beta, Xapp, t_cout, nbDimension)
+    print(logL)
+    print (i)
+    return(beta)
 }
 
 log.app <- function(Xapp, zapp, intr, epsi) {
-	n = dim(Xapp)[1]
-	nbDimension = dim(Xapp)[2]
-    if (intr == 1) {
-        nbDimension = nbDimension + 1
-    }
-    beta = matrix(sample(0), nbDimension, 1)
-    t_cout = calcul_cout(Xapp, zapp, nbDimension)
-    logL = calcul_log(beta, Xapp, t_cout, nbDimension)
-	H = matrix(sample(1), nbDimension, nbDimension)	
-	ecart = 1
-    for (i in 1:(nbDimension - 1)) {
-		print (beta)  
-		print(epsi)
-		print(ecart)
-		if (ecart > epsi) {
-			print(3)
-           	H = calcul_H(beta, Xapp, zapp, nbDimension)
-			print (H)
-           	grad = calcul_gradient(beta, Xapp, t_cout, nbDimension)
-           	beta = beta - ginv(H)%*%grad
-        	ecart = abs(beta[i +1] - beta[i]) 
-			print (beta)
-		 }	
-    }
-    return(beta)
+    n = dim(Xapp)[1]
+    nbDimension = dim(Xapp)[2]
+    if (intr == 1) {
+        nbDimension = nbDimension + 1
+        unit =  matrix(sample(1), n, 1)
+        Xapp = cbind(as.matrix(unit), as.matrix(Xapp))
+    }
+    beta = matrix(sample(0), nbDimension, 1)
+    t_cout = calcul_cout(Xapp, zapp, nbDimension)
+    H = matrix(sample(1), nbDimension, nbDimension) 
+    ecart = 1
+    i<-0
+    while (ecart > epsi){
+        H = calcul_H(beta, Xapp, zapp, nbDimension)
+        grad = calcul_gradient(beta, Xapp, t_cout, nbDimension)
+        beta_n = beta - solve(H)%*%grad # solve ou ginv
+        #ecart = dist(rbind(t(beta), t(beta_n)), "euclidian")
+        ecart = sqrt(sum((beta_n-beta)^2))
+        beta = beta_n
+        i = i+1
+    }  
+    logL = calcul_log(beta, Xapp, zapp)
+    print(logL)
+    print (i)
+    return(beta)
 }
 
 
 #2.1.2
-La fonction log.val, permettant d’évaluer un ensemble de test, prendra comme arguments d’entrée le tableau de données Xtst à classer et la matrice beta des paramètres déterminés par la fonction log.app. Cette fonction fera un test sur les dimensions de la matrice beta, pour déterminer si une ordonnée à l’origine doit être ou non ajoutée à la matrice d’exemples Xtst à évaluer. Elle devra retourner une structure contenant la matrice prob des probabilités a posteriori estimées et le vecteur des classements associés. Ces fonctions pourront s’appuyer sur une fonction calculant les probabilités a posteriori à partir d’une matrice de paramètres beta et d’un tableau de données X.
+#La fonction log.val, permettant d’évaluer un ensemble de test, prendra comme arguments d’entrée le tableau de données Xtst à classer et la matrice beta des paramètres déterminés par la fonction log.app. Cette fonction fera un test sur les dimensions de la matrice beta, pour déterminer si une ordonnée à l’origine doit être ou non ajoutée à la matrice d’exemples Xtst à évaluer. Elle devra retourner une structure contenant la matrice prob des probabilités a posteriori estimées et le vecteur des classements associés. Ces fonctions pourront s’appuyer sur une fonction calculant les probabilités a posteriori à partir d’une matrice de paramètres beta et d’un tableau de données X.
 
 log.val <- function(Xtst, beta) {
-	nbDimension = dim(Xtst)[2]
-	n = dim(Xtst)[1]
-	nbDimension_beta = dim(beta)[1]
-	if (nbDimension != nbDimension_beta) {
-		nbDimension = nbDimesion_beta
-	} 
-	Xtst = cbind(Xtst, beta[1])
-	result = matrix(sample(0), nbDimension, nbDimension + 1)
-	proba = matrix(sample(0), nbDimension, nbDimension)
-	classement = matrix(sample(0), n, 1)
-	
-	for (i in 1:n) {
-		if (nbDimension == 3) {
-			X = c(beta[1], Xapp[i,1], Xapp[i,2])
-		}
-		else {
-				X = c(Xapp[i,1], Xapp[i,2])
-			 }
-		proba = proba + exp(t(beta) %*% X) / (exp(t(beta) %*% X) + 1)
-	}
-	result = cbind(proba, classement)
-	return (result)
+    nbDimension = dim(Xtst)[2]
+    n = dim(Xtst)[1]
+    result = NULL
+    nbDimension_beta = dim(beta)[1]
+    if (nbDimension != nbDimension_beta) {
+        nbDimension = nbDimension_beta
+        unit =  matrix(sample(1), n, 1)
+        Xtst = cbind(as.matrix(unit), as.matrix(Xtst))
+    } 
+    proba = calcul_p(beta, Xtst)
+    classement = matrix(sample(0), n,1)
+    
+    prob1 <- exp(Xtst%*%beta)/(1 + exp(Xtst%*%beta))
+    prob2 <- 1/(1 + exp(Xtst%*%beta))
+
+    proba <- cbind(prob1,prob2)
+    classement<-max.col(proba)
+
+    result$proba = proba
+    result$classement = classement
+    return (result)
 }
 
+#####
+#tests
+val = log.val(Xapp1, beta)
+new_data = cbind(Xapp1, as.matrix(val$classement))
+new_data = cbind(donnees$Xtst, donnees$ztst, as.matrix(val$classement))
+plot(new_data[,1:2], pch=new_data[,3])
+
 #2.1.3
-Il est possible de généraliser le modèle de régression logistique de manière très simple. La stratégie consiste à transformer les données dans un espace plus complexe, dans lequel les classes peuvent être séparées par un hyperplan. La régression logistique est alors effectuée dans cet espace. Par exemple, dans le cas où les individus sont décrits par les variables X1 , X2 et X3 , la régression logistique quadratique consiste à effectuer la régression logistique classique dans l’espace correspondant aux variables X1 , X2 , X3 , X1X2 , X1X3 , X2X3 , (X1 ) 2 , (X2 ) 2 et (X3 ) 2 , que l’on notera X 2 , plutôt que dans l’espace X = {X1 , X2 , X3}. Le modèle ainsi défini est donc plus flexible ; mais le nombre de paramètres à estimer étant plus important (p(p+ 3)/2 au lieu de p), il peut également s’avérer moins robuste que le modèle classique déterminé dans l’espace des caractéristiques initiales.
+#Il est possible de généraliser le modèle de régression logistique de manière très simple. La stratégie consiste à transformer les données dans un espace plus complexe, dans lequel les classes peuvent être séparées par un hyperplan. La régression logistique est alors effectuée dans cet espace. Par exemple, dans le cas où les individus sont décrits par les variables X1 , X2 et X3 , la régression logistique quadratique consiste à effectuer la régression logistique classique dans l’espace correspondant aux variables X1 , X2 , X3 , X1X2 , X1X3 , X2X3 , (X1 ) 2 , (X2 ) 2 et (X3 ) 2 , que l’on notera X 2 , plutôt que dans l’espace X = {X1 , X2 , X3}. Le modèle ainsi défini est donc plus flexible ; mais le nombre de paramètres à estimer étant plus important (p(p+ 3)/2 au lieu de p), il peut également s’avérer moins robuste que le modèle classique déterminé dans l’espace des caractéristiques initiales.
 
 #Ici on est en quadratique
 
