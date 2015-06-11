@@ -11,25 +11,25 @@ init <- function () {
     zapp1 <- z[c(1:1000)]
 }
 
-calcul_cout <- function(Xapp, zapp, nbDimension) {
-    t_cout = matrix(sample(0), nbDimension, 1)
+calcul_t <- function(Xapp, zapp, nbDimension) {
+    t = matrix(sample(0), nbDimension, 1)
     napp = length(zapp)
     for (i in 1:napp) {
         if (zapp[i] == 1) {
-            t_cout[i] = 1
+            t[i] = 1
         }
-        else t_cout[i] = 0
+        else t[i] = 0
     }
-    return (t_cout)
+    return (t)
 }
 
 calcul_log <- function(beta, Xapp, zapp) {
-    p = exp(as.matrix(Xapp)%*%beta)/(1+exp(as.matrix(Xapp)%*%beta))
-    logL<- t(as.matrix(Xapp))%*%(zapp-p)
+    p = exp(as.matrix(Xapp) %*% beta)/(1+exp(as.matrix(Xapp) %*% beta))
+    logL<- t(as.matrix(Xapp)) %*% (zapp-p)
     return (logL)
 }
 
-calcul_gradient <- function(beta, Xapp, t_cout, nbDimension) {
+calcul_gradient <- function(beta, Xapp, t, nbDimension) {
     n = dim(Xapp)[1]
     result = matrix(sample(0),nbDimension, 1)
     X = matrix(sample(0),n, nbDimension)
@@ -40,7 +40,7 @@ calcul_gradient <- function(beta, Xapp, t_cout, nbDimension) {
         else {
                 X = c(Xapp[i,1], Xapp[i,2])
              }
-        result = result + t_cout[i] * X - X * exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))
+        result = result + t[i] * X - X * exp(t(beta) %*% X) / (1 + exp(t(beta) %*% X))
     }
     return (result)
 }
@@ -60,10 +60,11 @@ calcul_H <- function(beta, Xapp, zapp, nbDimension){
     H = -as.matrix(t(Xapp)) %*% as.matrix(W) %*% as.matrix(Xapp)
     return (H)
 }
+
 calcul_hessienne<-function(beta, Xapp, nbDimension){
     n = dim(Xapp)[1]
     W = matrix(sample(0), n,n)
-    prod = as.matrix(Xapp)%*%beta
+    prod = as.matrix(Xapp) %*% beta
     W = exp(prod)/((1+exp(prod))^2)
     H = -1 * as.matrix(t(Xapp)) %*% as.matrix(diag(as.numeric(W))) %*% as.matrix(Xapp)
     return (H)
@@ -86,13 +87,13 @@ log.app2 <- function(Xapp, zapp, intr, epsi){
         Xapp = cbind(as.matrix(unit), as.matrix(Xapp))
     }
     beta = matrix(sample(0), nbDimension, 1)
-    t_cout = calcul_cout(Xapp, zapp, nbDimension)
+    t = calcul_cout(Xapp, zapp, nbDimension)
     ecart = 1
     i<-0
     while (ecart > epsi){
         H = -1 * calcul_hessienne(beta, Xapp, nbDimension)
         p = calcul_p(beta, Xapp)
-        beta_n = beta + solve(H)%*%t(Xapp)%*%(t_cout - p) # solve ou ginv
+        beta_n = beta + solve(H) %*% t(Xapp) %*% (t - p) # solve ou ginv
         #ecart = dist(rbind(t(beta), t(beta_n)), "euclidian")
         ecart = sqrt(sum((beta_n-beta)^2))
         beta = beta_n
@@ -113,14 +114,14 @@ log.app <- function(Xapp, zapp, intr, epsi) {
         Xapp = cbind(as.matrix(unit), as.matrix(Xapp))
     }
     beta = matrix(sample(0), nbDimension, 1)
-    t_cout = calcul_cout(Xapp, zapp, nbDimension)
+    t = calcul_cout(Xapp, zapp, nbDimension)
     H = matrix(sample(1), nbDimension, nbDimension) 
     ecart = 1
     i<-0
     while (ecart > epsi){
         H = calcul_H(beta, Xapp, zapp, nbDimension)
-        grad = calcul_gradient(beta, Xapp, t_cout, nbDimension)
-        beta_n = beta - solve(H)%*%grad # solve ou ginv
+        grad = calcul_gradient(beta, Xapp, t, nbDimension)
+        beta_n = beta - solve(H) %*% grad # solve ou ginv
         #ecart = dist(rbind(t(beta), t(beta_n)), "euclidian")
         ecart = sqrt(sum((beta_n-beta)^2))
         beta = beta_n
@@ -150,8 +151,8 @@ log.val <- function(Xtst, beta) {
     classement = matrix(sample(0), n,1)
     Xtst = as.matrix(Xtst)
     beta = as.matrix(beta)
-    prob1 <- exp(Xtst%*%beta)/(1 + exp(Xtst%*%beta))
-    prob2 <- 1/(1 + exp(Xtst%*%beta))
+    prob1 <- exp(Xtst %*% beta)/(1 + exp(Xtst %*% beta))
+    prob2 <- 1/(1 + exp(Xtst %*% beta))
 
     proba <- cbind(prob1,prob2)
     classement<-max.col(proba)
@@ -164,9 +165,14 @@ log.val <- function(Xtst, beta) {
 #####
 #tests
 val = log.val(Xapp1, beta)
-new_data = cbind(Xapp1, as.matrix(val$classement))
-new_data = cbind(donnees$Xtst, donnees$ztst, as.matrix(val$classement))
+new_data = cbind(Xapp1, zapp1, as.matrix(val$classement))
+#new_data = cbind(donn$Xtst, donn$ztst, as.matrix(val$classement))
 plot(new_data[,1:2], pch=new_data[,3])
+
+separation = separ1(Xapp1, zapp1)
+valtst = log.val(separation$Xtst, beta)
+new_data = cbind(separation$Xtst, separation$ztst, as.matrix(valtst$classement))
+plot(new_data[,1:2], pch = new_data[,3])
 
 #2.1.3
 #Il est possible de généraliser le modèle de régression logistique de manière très simple.
@@ -242,6 +248,8 @@ calcul_taux_erreur <- function(ztst, classement){
     taux = sum(ztst-classement)/dim(as.matrix(ztst))[1]*100
     return (taux)
 }
+erreur = calcul_taux_erreur(separation$ztst, valtst$classement)
+
 
 estim_erreur <- function(donn, quad) {
     X <- donn[,1:2]
@@ -259,6 +267,7 @@ estim_erreur <- function(donn, quad) {
     
     return (estim/20)
 }
+estimation = estim_erreur(donn, 0)
 
 prob.log <- function(param, X, z, niveaux) {
     discretisation=50
