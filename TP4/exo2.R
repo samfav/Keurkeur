@@ -260,8 +260,7 @@ estim_erreur <- function(donn, quad) {
     return (estim/20)
 }
 
-prob.log <- function(param, X, z, niveaux)
-{
+prob.log <- function(param, X, z, niveaux) {
     discretisation=50
     deltaX <- (max(X[,1]) -min(X[,1]))/discretisation
     deltaY <- (max(X[,2]) -min(X[,2]))/discretisation
@@ -285,8 +284,7 @@ prob.log <- function(param, X, z, niveaux)
     contour(grilleX, grilleY, matrix(valf,nrow=naffX,byrow=T), add=T, drawlabels=FALSE, levels=niveaux)
 }
 
-prob.log2 <- function(param, X, z, niveaux)
-{
+prob.log2 <- function(param, X, z, niveaux) {
     discretisation=50
     deltaX <- (max(X[,1]) -min(X[,1]))/discretisation
     deltaY <- (max(X[,2]) -min(X[,2]))/discretisation
@@ -301,7 +299,7 @@ prob.log2 <- function(param, X, z, niveaux)
     grilleY <- seq(from=minY,to=maxY,by=deltaY)
     naffY <- length(grilleY)
     grille <- cbind(rep.int(grilleX,times=rep(naffY,naffX)),rep(grilleY,naffX))
-    grille <- cbind(grille, grille[,1]*grille[,2], grille[,1]^2, grille[,2]^2)
+	grille <- cbind(grille, grille[,1]*grille[,2], grille[,1]^2, grille[,2]^2)
 
     grille <- as.matrix(grille)
 
@@ -310,20 +308,3 @@ prob.log2 <- function(param, X, z, niveaux)
     plot(X, col=c("red","green","blue","magenta","orange")[z])
     contour(grilleX, grilleY, matrix(valf,nrow=naffX,byrow=T), add=T, drawlabels=FALSE, levels=niveaux)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#

@@ -16,7 +16,7 @@ for (p in 1:(dim(Xapp)[2]-1)) {
 		Xtst2 <- cbind(Xtst2, Xtst[,p]*Xtst[,q])
 	}
 }
-for (p in 1:(dim(Xapp)[2]-1)) {
+for (p in 1:(dim(Xapp)[2])) {
 	Xapp2 <- cbind(Xapp2, Xapp[,p]^2)
 	Xtst2 <- cbind(Xtst2, Xtst[,p]^2)
 }
@@ -35,3 +35,9 @@ calcul_E <- function(zappDonnees,zappCalcule) {
 }
 
 calcul_E(ztst,ceuc.val(ceuc.app(Xapp,zapp),Xtst))
+
+
+#3.2 Données breast cancer Wisconsin
+Donn <- read.csv("bcw.csv", header=T)
+X <- Donn[,1:9]
+z <- Donn[,10]

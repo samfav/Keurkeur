@@ -1,5 +1,4 @@
-prob.log <- function(param, X, z, niveaux)
-{
+prob.log <- function(param, X, z, niveaux) {
     discretisation=50
     deltaX <- (max(X[,1]) -min(X[,1]))/discretisation
     deltaY <- (max(X[,2]) -min(X[,2]))/discretisation
